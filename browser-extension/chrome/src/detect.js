@@ -57,6 +57,7 @@ function detectPlatform(url) {
   if (matchesHost(host, "vimeo.com")) return "vimeo";
   if (matchesHost(host, "udemy.com")) return "udemy";
   if (matchesHost(host, "bilibili.com") || host === "b23.tv") return "bilibili";
+  if (matchesHost(host, "douyin.com")) return "douyin";
 
   return null;
 }
@@ -90,6 +91,8 @@ function detectContentType(platform, url) {
       return parseUdemy(segments);
     case "bilibili":
       return parseBilibili(segments);
+    case "douyin":
+      return parseDouyin(url, segments);
     default:
       return "unknown";
   }
@@ -263,6 +266,25 @@ function parseUdemy(segments) {
 
 function parseBilibili(segments) {
   return segments[0] === "video" && segments[1] ? "video" : "unknown";
+}
+
+function parseDouyin(url, segments) {
+  const host = url.hostname.toLowerCase();
+  if (host === "v.douyin.com") {
+    return segments[0] ? "video" : "unknown";
+  }
+  if ((segments[0] === "video" || segments[0] === "note") && segments[1] && /^\d+$/.test(segments[1])) {
+    return "video";
+  }
+  if (
+    segments[0] === "share" &&
+    (segments[1] === "video" || segments[1] === "note") &&
+    segments[2] &&
+    /^\d+$/.test(segments[2])
+  ) {
+    return "video";
+  }
+  return "unknown";
 }
 
 function matchesHost(host, domain) {

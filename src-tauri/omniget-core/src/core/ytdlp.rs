@@ -489,6 +489,12 @@ fn managed_cookies_only() -> bool {
     MANAGED_COOKIES_ONLY_FN.get().map(|f| f()).unwrap_or(true)
 }
 
+/// Unmanaged cookie sources (global file, extension jar, browser profile)
+/// are used only when the managed-cookie-only policy is off.
+pub(crate) fn metadata_allows_unmanaged_fallback(managed_only: bool) -> bool {
+    !managed_only
+}
+
 pub fn set_global_cookie_file_fn(f: impl Fn() -> Option<String> + Send + Sync + 'static) {
     let _ = GLOBAL_COOKIE_FILE_FN.set(Box::new(f));
 }
@@ -1234,6 +1240,12 @@ fn metadata_cookie_source(url: &str, extra_flags: &[String]) -> MetadataCookieSo
 
     if let Some(path) = per_domain_cookie_file(url) {
         return MetadataCookieSource::PerDomain(path);
+    }
+
+    // Same rule as download: a managed-cookie-only process does not fall
+    // through to a global file, the extension jar, or the browser.
+    if !metadata_allows_unmanaged_fallback(managed_cookies_only()) {
+        return MetadataCookieSource::None;
     }
 
     if let Some(header) = manual_cookie_header_setting() {
@@ -3218,7 +3230,7 @@ pub async fn download_video(
         per_domain_cookie_file(url)
     };
     let managed_only = managed_cookies_only();
-    let allow_fallback = !managed_only
+    let allow_fallback = metadata_allows_unmanaged_fallback(managed_only)
         && !explicit_cookie_header
         && cookie_file.is_none()
         && per_domain_cookies.is_none();
@@ -5471,6 +5483,12 @@ mod tests {
     }
 
     use super::*;
+
+    #[test]
+    fn managed_cookie_policy_blocks_unmanaged_fallback() {
+        assert!(!metadata_allows_unmanaged_fallback(true));
+        assert!(metadata_allows_unmanaged_fallback(false));
+    }
 
     #[test]
     fn playlist_dump_uses_top_level_url() {

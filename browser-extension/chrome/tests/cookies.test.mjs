@@ -164,6 +164,7 @@ test("default domains include all currently detectable platforms", async () => {
     "twitch",
     "vimeo",
     "bilibili",
+    "douyin",
     "pinterest",
     "hotmart",
     "udemy",
@@ -241,6 +242,31 @@ test("rocketseat maps to the .com.br domain in defaults and resource", async () 
   assert.deepEqual(DEFAULT_PLATFORM_COOKIE_DOMAINS.rocketseat, [".rocketseat.com.br"]);
   const raw = await readFile(new URL("../src/cookies-domains.json", import.meta.url), "utf8");
   assert.deepEqual(JSON.parse(raw).rocketseat, [".rocketseat.com.br"]);
+});
+
+test("Douyin capture does not return cookies from another platform", async () => {
+  const cookies = await extractCookiesForPlatform(
+    "douyin",
+    mockGetAllCookies({
+      ".douyin.com": [
+        { domain: ".douyin.com", httpOnly: true, path: "/", secure: true, expirationDate: 1893456000, name: "ttwid", value: "dy-synthetic-session" },
+      ],
+      ".bilibili.com": [
+        { domain: ".bilibili.com", httpOnly: true, path: "/", secure: true, expirationDate: 1893456000, name: "SESSDATA", value: "bi-synthetic-session" },
+      ],
+    }),
+  );
+  assert.equal(cookies.length, 1);
+  assert.equal(cookies[0].name, "ttwid");
+  assert.equal(cookies[0].value, "dy-synthetic-session");
+  assert.deepEqual(DEFAULT_PLATFORM_COOKIE_DOMAINS.douyin, [".douyin.com"]);
+});
+
+test("auto-capture lists Douyin without a wildcard host", async () => {
+  const background = await readFile(new URL("../src/background.js", import.meta.url), "utf8");
+  assert.match(background, /"douyin"/);
+  assert.match(background, /\.douyin\.com/);
+  assert.doesNotMatch(background, /\*:\/\/\*\/\*/);
 });
 
 test("extractCookiesForPlatform picks up the Rocketseat JWT cookie", async () => {

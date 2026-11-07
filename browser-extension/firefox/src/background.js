@@ -547,6 +547,7 @@ const TRACKED_COOKIE_NAMES = new Set([
   "VISITOR_INFO1_LIVE",
   "PREF",
   "sessionid",
+  "ttwid",
   "ds_user_id",
   "ig_did",
   "auth_token",
@@ -575,6 +576,7 @@ const TRACKED_DOMAIN_SUFFIXES = [
   ".twitch.tv",
   ".vimeo.com",
   ".bilibili.com",
+  ".douyin.com",
   ".pinterest.com",
   ".hotmart.com",
   ".udemy.com",
@@ -596,6 +598,7 @@ function platformForDomain(domain) {
   if (d.endsWith(".twitch.tv")) return "twitch";
   if (d.endsWith(".vimeo.com")) return "vimeo";
   if (d.endsWith(".bilibili.com")) return "bilibili";
+  if (d.endsWith(".douyin.com") || d === "douyin.com") return "douyin";
   if (d.endsWith(".pinterest.com")) return "pinterest";
   if (d.endsWith(".hotmart.com")) return "hotmart";
   if (d.endsWith(".udemy.com")) return "udemy";
@@ -699,6 +702,7 @@ async function scanAllPlatformsForCookies() {
     "twitch",
     "vimeo",
     "bilibili",
+    "douyin",
     "soundcloud",
     "pinterest",
     "hotmart",

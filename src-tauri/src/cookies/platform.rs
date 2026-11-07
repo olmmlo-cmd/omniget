@@ -74,29 +74,7 @@ impl PlatformKind {
     }
 }
 
-/// Second-level public suffixes where the registrable name is three labels
-/// long (`app.rocketseat.com.br` -> `rocketseat.com.br`). Without this the
-/// Cookie Manager filed every Brazilian site under one `com.br` bucket.
-const TWO_LABEL_PUBLIC_SUFFIXES: &[&str] = &[
-    "com.br", "net.br", "org.br", "edu.br", "gov.br", "art.br", "eng.br", "co.uk", "org.uk",
-    "ac.uk", "gov.uk", "me.uk", "com.au", "net.au", "org.au", "edu.au", "co.jp", "ne.jp", "or.jp",
-    "ac.jp", "com.mx", "org.mx", "com.ar", "com.co", "com.pe", "com.cl", "com.ve", "com.uy",
-    "co.za", "co.nz", "co.in", "co.kr", "co.id", "com.sg", "com.hk", "com.tw", "com.my", "com.tr",
-    "com.pt", "com.es", "com.pl", "com.ua", "com.ru", "com.cn", "com.ph",
-];
-
-pub fn root_domain_of(host: &str) -> String {
-    let h = host.trim_start_matches('.').to_lowercase();
-    let parts: Vec<&str> = h.split('.').collect();
-    if parts.len() < 2 {
-        return h;
-    }
-    let last_two = parts[parts.len() - 2..].join(".");
-    if parts.len() >= 3 && TWO_LABEL_PUBLIC_SUFFIXES.contains(&last_two.as_str()) {
-        return parts[parts.len() - 3..].join(".");
-    }
-    last_two
-}
+pub use omniget_core::core::managed_cookies::root_domain_of;
 
 #[cfg(test)]
 mod tests {

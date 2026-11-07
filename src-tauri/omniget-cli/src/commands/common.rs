@@ -30,6 +30,17 @@ pub fn init_cli_runtime(proxy: Option<&str>) -> Result<()> {
 }
 
 fn init_cookie_provider() {
+    // GUI Cookie Manager buckets (`cookies/<domain>/_default.txt` and named
+    // accounts) are the session both `info` and `download` attach. The
+    // managed-cookie-only policy stays on, so this does not enable a browser
+    // or whole-file fallback.
+    ytdlp::set_per_domain_cookie_fn(|url| {
+        let dir = omniget_core::core::paths::app_data_dir()?.join("cookies");
+        let slug = omniget_core::core::log_hook::current_cookie_slug();
+        omniget_core::core::managed_cookies::resolve_for_url(&dir, url, slug.as_deref())
+            .path()
+            .map(|path| path.to_path_buf())
+    });
     ytdlp::set_global_cookie_file_fn(|| {
         reporter::default_cookie_path().map(|path| path.to_string_lossy().to_string())
     });

@@ -75,6 +75,8 @@
     "*://*.bilibili.com/*",
     "*://*.bilivideo.com/*",
     "*://b23.tv/*",
+    "*://douyin.com/*",
+    "*://*.douyin.com/*",
     "*://*.soundcloud.com/*",
     "*://*.sndcdn.com/*"
   ],

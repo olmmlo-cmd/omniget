@@ -17,7 +17,37 @@ test("detectPlatformKind recognises course platforms", () => {
   assert.equal(detectPlatformKind("consumer.hotmart.com"), "hotmart");
   assert.equal(detectPlatformKind("www.udemy.com"), "udemy");
   assert.equal(detectPlatformKind("music.youtube.com"), "youtube_music");
+  assert.equal(detectPlatformKind("www.douyin.com"), "douyin");
+  assert.equal(detectPlatformKind("v.douyin.com"), "douyin");
+  assert.equal(detectPlatformKind("www.bilibili.com"), "bilibili");
   assert.equal(detectPlatformKind("example.org"), "generic");
+});
+
+test("captureCookiesForTab reads only the Douyin registrable domain", async () => {
+  const requested = [];
+  const cookiesApi = {
+    getAll(details, cb) {
+      requested.push(details.domain);
+      cb([
+        { domain: ".douyin.com", name: "ttwid", value: "dy-synthetic-session", path: "/", secure: true, httpOnly: true, expirationDate: 1893456000 },
+      ]);
+    },
+  };
+  let sent = null;
+  const send = async (cookies, meta) => {
+    sent = { cookies, meta };
+    return { ok: true };
+  };
+  const result = await captureCookiesForTab(
+    { url: "https://www.douyin.com/video/7671615341503994458", title: "Douyin video" },
+    { cookiesApi, send },
+  );
+  assert.deepEqual(requested, ["douyin.com"]);
+  assert.equal(result.ok, true);
+  assert.equal(result.platform_kind, "douyin");
+  assert.equal(sent.cookies[0].name, "ttwid");
+  assert.equal(sent.cookies.length, 1);
+  assert.equal(sent.meta.sourceUrl.includes("bilibili"), false);
 });
 
 test("captureCookiesForTab asks for the registrable domain and ships the batch", async () => {

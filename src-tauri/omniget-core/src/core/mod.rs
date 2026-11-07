@@ -19,6 +19,7 @@ pub mod hwaccel;
 pub mod impersonation;
 pub mod livechat;
 pub mod log_hook;
+pub mod managed_cookies;
 pub mod media_processor;
 pub mod media_signature;
 pub mod onnxrt;

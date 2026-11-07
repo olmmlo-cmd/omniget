@@ -168,6 +168,24 @@ impl DouyinDownloader {
     }
 }
 
+fn reject_expired_session(url: &str) -> anyhow::Result<()> {
+    let Some(base) = crate::core::paths::app_data_dir() else {
+        return Ok(());
+    };
+    let status = crate::core::managed_cookies::resolve_for_url(
+        &base.join("cookies"),
+        url,
+        crate::core::log_hook::current_cookie_slug().as_deref(),
+    );
+    if matches!(status, crate::core::managed_cookies::SessionStatus::Expired) {
+        Err(anyhow!(
+            crate::core::managed_cookies::EXPIRED_SESSION_MESSAGE
+        ))
+    } else {
+        Ok(())
+    }
+}
+
 #[async_trait]
 impl PlatformDownloader for DouyinDownloader {
     fn name(&self) -> &str {
@@ -189,6 +207,7 @@ impl PlatformDownloader for DouyinDownloader {
             .ok_or_else(|| anyhow!("yt-dlp not found"))?;
 
         let resolved = Self::resolve_url(url).await;
+        reject_expired_session(&resolved)?;
         let extra = Self::extra_flags();
         let json = ytdlp::get_video_info(&ytdlp_path, &resolved, &extra).await?;
 
@@ -264,6 +283,7 @@ impl PlatformDownloader for DouyinDownloader {
             return Err(anyhow!("No URL available"));
         }
         let canonical = Self::resolve_url(canonical).await;
+        reject_expired_session(&canonical)?;
 
         let quality_height = opts
             .quality

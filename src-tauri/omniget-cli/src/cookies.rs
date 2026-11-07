@@ -1,8 +1,8 @@
 use anyhow::{Context, Result};
-use std::collections::HashMap;
 use std::path::PathBuf;
 
 use omniget_core::core::cookie_parser::parse_cookie_input;
+use omniget_core::core::managed_cookies::{self, account_slug};
 use omniget_core::core::paths::app_data_dir;
 
 const COOKIES_DIR: &str = "cookies";
@@ -95,6 +95,9 @@ pub fn import_cookies_file(src_path: &PathBuf, name: Option<&str>) -> Result<usi
     // Copy the raw file (preserving original format for yt-dlp consumption)
     // Normalize line endings but otherwise keep as-is
     let normalized = content.replace("\r\n", "\n").replace('\r', "\n");
+    let slug = account_slug(name);
+    managed_cookies::import_netscape_split(&cookies_dir, &normalized, &slug)
+        .map_err(|error| anyhow::anyhow!(error))?;
     std::fs::write(&dest_file, normalized)
         .with_context(|| format!("Failed to write {}", dest_file.display()))?;
 
