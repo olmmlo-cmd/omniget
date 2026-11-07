@@ -97,6 +97,20 @@ test("declares host permission for Rocketseat so its cookies can be captured", a
   assert.ok(manifest.host_permissions.includes("*://*.rocketseat.com.br/*"));
 });
 
+test("Douyin host permissions are the registrable domain only", async () => {
+  const manifest = await readManifest();
+  const firefox = JSON.parse(
+    await readFile(new URL("../../firefox/manifest.json", import.meta.url), "utf8"),
+  );
+  for (const file of [manifest, firefox]) {
+    assert.ok(file.host_permissions.includes("*://douyin.com/*"));
+    assert.ok(file.host_permissions.includes("*://*.douyin.com/*"));
+    assert.ok(!file.host_permissions.includes("*://*/*"));
+    assert.ok(!file.host_permissions.some((pattern) => pattern.includes("iesdouyin")));
+    assert.ok(!file.host_permissions.some((pattern) => pattern.includes("amemv")));
+  }
+});
+
 test("keeps management as an optional permission, never a required one", async () => {
   const manifest = await readManifest();
 

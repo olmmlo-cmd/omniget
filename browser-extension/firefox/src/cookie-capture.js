@@ -22,6 +22,7 @@ const TRACKED_PLATFORMS = {
   "vimeo.com": "vimeo",
   "tiktok.com": "tiktok",
   "bilibili.com": "bilibili",
+  "douyin.com": "douyin",
   "reddit.com": "reddit",
   "pinterest.com": "pinterest",
   "bsky.app": "bluesky",

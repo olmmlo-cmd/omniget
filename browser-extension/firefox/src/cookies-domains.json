@@ -31,6 +31,9 @@
     ".bilibili.com",
     ".bilivideo.com"
   ],
+  "douyin": [
+    ".douyin.com"
+  ],
   "soundcloud": [
     ".soundcloud.com",
     ".sndcdn.com"

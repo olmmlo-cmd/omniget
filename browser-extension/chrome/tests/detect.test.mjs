@@ -341,3 +341,24 @@ test("Bilibili: b23.tv short link", () => {
 test("Bilibili: homepage is unknown", () => {
   assertUnsupported("https://www.bilibili.com/", "bilibili", "unknown");
 });
+
+// ── Douyin ───────────────────────────────────────────────────────────────
+
+test("Douyin: video page", () => {
+  assertSupported("https://www.douyin.com/video/7671615341503994458", "douyin", "video");
+});
+
+test("Douyin: note and share video pages", () => {
+  assertSupported("https://www.douyin.com/note/1234567890", "douyin", "video");
+  assertSupported("https://www.douyin.com/share/video/1234567890", "douyin", "video");
+});
+
+test("Douyin: short link", () => {
+  assertSupported("https://v.douyin.com/abc/", "douyin", "video");
+});
+
+test("Douyin: homepage is unknown and other hosts are not Douyin", () => {
+  assertUnsupported("https://www.douyin.com/", "douyin", "unknown");
+  assertNull("https://www.iesdouyin.com/share/video/1");
+  assertNull("https://www.bilibili.com/video/BV1xx411c7XY".replace("bilibili", "example"));
+});

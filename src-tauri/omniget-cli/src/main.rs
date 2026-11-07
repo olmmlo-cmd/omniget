@@ -70,8 +70,21 @@ enum Commands {
     },
 }
 
+fn adopt_portable_data_dir() {
+    if std::env::var_os("OMNIGET_DATA_DIR").is_some() {
+        return;
+    }
+    let Ok(exe) = std::env::current_exe() else {
+        return;
+    };
+    if let Some(dir) = omniget_core::core::paths::portable_data_dir_beside(&exe) {
+        std::env::set_var("OMNIGET_DATA_DIR", dir);
+    }
+}
+
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
+    adopt_portable_data_dir();
     tracing_subscriber::fmt()
         .with_env_filter(
             tracing_subscriber::EnvFilter::try_from_default_env()

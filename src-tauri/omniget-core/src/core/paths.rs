@@ -1,3 +1,14 @@
+/// Data directory used when `portable.txt` or `.portable` sits next to the
+/// executable. Same marker the desktop app checks before it starts.
+pub fn portable_data_dir_beside(exe: &std::path::Path) -> Option<std::path::PathBuf> {
+    let dir = exe.parent()?;
+    if dir.join("portable.txt").exists() || dir.join(".portable").exists() {
+        Some(dir.join("data"))
+    } else {
+        None
+    }
+}
+
 pub fn app_data_dir() -> Option<std::path::PathBuf> {
     if let Ok(dir) = std::env::var("OMNIGET_DATA_DIR") {
         return Some(std::path::PathBuf::from(dir));
@@ -47,4 +58,23 @@ fn copy_dir_recursive(src: &std::path::Path, dst: &std::path::Path) -> std::io::
         std::fs::copy(src, dst)?;
     }
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::fs;
+
+    #[test]
+    fn portable_marker_selects_the_data_dir_beside_the_exe() {
+        let root = std::env::temp_dir().join(format!("omniget-portable-{}", std::process::id()));
+        let _ = fs::remove_dir_all(&root);
+        fs::create_dir_all(&root).unwrap();
+        let exe = root.join("omniget-cli");
+        fs::write(&exe, b"").unwrap();
+        assert!(portable_data_dir_beside(&exe).is_none());
+        fs::write(root.join("portable.txt"), b"").unwrap();
+        assert_eq!(portable_data_dir_beside(&exe).unwrap(), root.join("data"));
+        let _ = fs::remove_dir_all(&root);
+    }
 }
